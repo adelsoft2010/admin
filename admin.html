@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>لوحة تحكم الرسائل المنبثقة - احترافي</title>
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Cairo font -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+    
+    body { 
+      font-family: 'Cairo', sans-serif; 
+      background: linear-gradient(180deg,#061124 0%, #07122a 100%); 
+      color: #e6eef7; 
+    }
+    .glass { 
+      background: rgba(255,255,255,0.03); 
+      border: 1px solid rgba(255,255,255,0.05); 
+      backdrop-filter: blur(8px); 
+      border-radius: 14px; 
+    }
+    .card { 
+      box-shadow: 0 10px 30px rgba(3,7,18,0.7); 
+    }
+    
+    /* محرر النصوص الاحترافي */
+    .rich-editor-toolbar {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px 10px 0 0;
+      padding: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    .editor-btn {
+      background: transparent;
+      border: 1px solid #475569;
+      color: #cbd5e1;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 14px;
+    }
+    
+    .editor-btn:hover {
+      background: #334155;
+      color: #60a5fa;
+      border-color: #60a5fa;
+    }
+    
+    .editor-btn.active {
+      background: #60a5fa;
+      color: white;
+      border-color: #60a5fa;
+    }
+    
+    .editor-select, .editor-input {
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #e2e8f0;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      min-width: 80px;
+    }
+    
+    .editor-select:focus, .editor-input:focus {
+      outline: none;
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 2px rgba(96,165,250,0.2);
+    }
+    
+    .rich-editor-content {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      min-height: 300px;
+      padding: 20px;
+      color: #e2e8f0;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-y: auto;
+    }
+    
+    .rich-editor-content:focus {
+      outline: none;
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 2px rgba(96,165,250,0.1);
+    }
+    
+    .rich-editor-content p {
+      margin: 0 0 10px 0;
+    }
+    
+    .rich-editor-content ul, .rich-editor-content ol {
+      margin: 10px 0;
+      padding-right: 20px;
+    }
+    
+    /* Icon picker integrated */
+    .icon-picker-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .icon-dropdown-content {
+      display: none;
+      position: absolute;
+      background: #0f172a;
+      min-width: 300px;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      z-index: 100;
+      padding: 10px;
+      top: 100%;
+      left: 0;
+    }
+    
+    .icon-dropdown-content.show {
+      display: block;
+    }
+    
+    .icon-grid-inline {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+    }
+    
+    .icon-grid-inline i {
+      padding: 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      border: 1px solid transparent;
+    }
+    
+    .icon-grid-inline i:hover {
+      background: rgba(96,165,250,0.2);
+      color: #60a5fa;
+      border-color: #60a5fa;
+    }
+
+    /* Full screen modal */
+    .modal-fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1000;
+      display: none;
+      background: rgba(0,0,0,0.8);
+    }
+    .modal-fullscreen.show {
+      display: flex;
+    }
+    .modal-fullscreen .modal-content {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg,#0f172a 0%, #1e293b 100%);
+      border-radius: 0;
+      overflow-y: auto;
+    }
+
+    .modal { 
+      position: fixed; 
+      inset: 0; 
+      display: none; 
+      align-items: center; 
+      justify-content: center; 
+      z-index: 60; 
+      background: rgba(0,0,0,0.7); 
+    }
+    .modal.show { 
+      display: flex; 
+    }
+    
+    /* Preview modal with higher z-index */
+    .preview-modal {
+      z-index: 2000 !important;
+    }
+    
+    /* أكواد المعاينة الاحترافية */
+    .popup-overlay-preview {
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.75); 
+      z-index: 2001;
+      backdrop-filter: blur(5px);
+    }
+    
+    .popup-container-preview {
+      position: fixed; 
+      top: 50%; 
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #1e1e1e; 
+      color: #e0e0e0; 
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      width: 90%; 
+      max-width: 480px; 
+      z-index: 2002;
+      text-align: center;
+      font-family: 'Cairo', sans-serif;
+      overflow: hidden;
+      transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+    }
+    
+    .popup-container-preview.offer {
+      max-width: 600px;
+    }
+    
+    .popup-background-image {
+      position: absolute; 
+      top: 30%; 
+      left: 50%;
+      transform: translate(-50%, -50%); 
+      width: 70%;
+      height: auto; 
+      opacity: 0.07; 
+      z-index: 0;
+      pointer-events: none;
+    }
+    
+    .popup-header-preview, .popup-content-preview, .popup-footer-preview, .dont-show-again-preview {
+      position: relative; 
+      z-index: 1; 
+      background-color: transparent;
+    }
+    
+    .popup-header-preview {
+      background-color: #f97316; 
+      color: white; 
+      padding: 15px 60px;
+    }
+    
+    .popup-header-preview span {
+      display: block; 
+      width: 100%; 
+      text-align: center;
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis;
+    }
+    
+    .popup-content-preview { 
+      padding: 25px 35px; 
+    }
+    
+    .popup-content-preview.compact { 
+      padding: 15px 35px 10px; 
+    }
+    
+    .popup-container-preview .close-btn-preview {
+      position: absolute; 
+      top: 50%; 
+      left: 15px; 
+      transform: translateY(-50%);
+      font-size: 32px; 
+      font-weight: 400; 
+      color: #fff;
+      text-decoration: none; 
+      cursor: pointer; 
+      z-index: 11;
+    }
+    
+    .popup-container-preview .lang-toggle-inside {
+      position: absolute; 
+      top: 50%; 
+      right: 15px; 
+      transform: translateY(-50%);
+      background-color: #2e2e2e; 
+      color: #fff; 
+      border: 1px solid #555;
+      padding: 6px 10px; 
+      cursor: pointer; 
+      border-radius: 6px;
+      font-size: 13px; 
+      z-index: 10;
+    }
+    
+    .popup-container-preview .cta-button {
+      display: inline-flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 8px;
+      background-color: #0099e6; 
+      color: #ffffff; 
+      padding: 12px 25px;
+      border-radius: 8px; 
+      text-decoration: none; 
+      font-weight: bold; 
+      font-size: 16px;
+      border: none; 
+      cursor: pointer; 
+      animation: pulse-glow 2.5s infinite ease-in-out;
+    }
+    
+    .cta-icon { 
+      font-size: 20px; 
+      line-height: 1; 
+    }
+    
+    .popup-container-preview .cta-button:hover { 
+      background-color: #00aaff; 
+      animation-play-state: paused; 
+    }
+    
+    @keyframes pulse-glow { 
+      0%, 100% { 
+        transform: scale(1); 
+        box-shadow: 0 0 0 0 rgba(0, 153, 230, 0.7); 
+      } 
+      50% { 
+        transform: scale(1.05); 
+        box-shadow: 0 0 20px 10px rgba(0, 153, 230, 0); 
+      } 
+    }
+    
+    .popup-footer-preview { 
+      background-color: #2e2e2e; 
+      padding: 15px 30px; 
+      text-align: center; 
+      color: #94a3b8; 
+      font-size: 13px; 
+    }
+    
+    .popup-footer-preview hr { 
+      border: none; 
+      border-top: 1px solid #444; 
+      margin: 0 0 15px 0; 
+    }
+    
+    .popup-footer-preview p { 
+      margin: 0 0 10px 0; 
+      font-size: 14px; 
+      line-height: 1.5; 
+      min-height: initial; 
+    }
+    
+    .contact-buttons-wrapper { 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      flex-wrap: wrap; 
+      gap: 12px; 
+      margin: 20px 0; 
+    }
+    
+    .contact-btn { 
+      display: inline-flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 8px; 
+      padding: 8px 16px; 
+      border-radius: 8px; 
+      text-decoration: none; 
+      color: white; 
+      font-weight: bold; 
+      font-size: 14px; 
+      border: none; 
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+      transition: transform 0.2s ease, box-shadow 0.2s ease; 
+    }
+    
+    .contact-btn:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3); 
+    }
+    
+    .telegram-btn { 
+      background-color: #259cd8; 
+    }
+    
+    .whatsapp-btn { 
+      background-color: #25D366; 
+    }
+    
+    .email-btn { 
+      background-color: #c71610; 
+    }
+    
+    .popup-footer-preview .footer-thanks { 
+      margin-top: 15px; 
+      font-size: 13px; 
+      color: #94a3b8; 
+    }
+    
+    .brand-name-orange { 
+      color: #f97316; 
+      font-weight: bold; 
+    }
+    
+    .dont-show-again-preview { 
+      background-color: #1e1e1e; 
+      padding: 15px; 
+      border-top: 1px solid #2e2e2e; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 13px; 
+      color: #ccc; 
+    }
+    
+    .toast { 
+      position: fixed; 
+      right: 20px; 
+      bottom: 20px; 
+      background: rgba(15,23,42,0.95); 
+      color: #fff; 
+      padding: 15px 20px; 
+      border-radius: 10px; 
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6); 
+      z-index: 1100; 
+      border-left: 4px solid #10b981;
+      min-width: 300px;
+    }
+    
+    .toast.error {
+      border-left-color: #ef4444;
+    }
+    
+    table td, table th { 
+      padding: 15px 18px; 
+      border-bottom: 1px solid rgba(255,255,255,0.05); 
+    }
+    
+    .btn { 
+      cursor: pointer; 
+      padding: 10px 16px; 
+      border-radius: 8px; 
+      transition: all 0.2s; 
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    
+    /* تحسين مظهر النماذج */
+    input, select, textarea {
+      background: #1e293b !important;
+      border: 1px solid #475569 !important;
+      color: #e2e8f0 !important;
+      transition: all 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #60a5fa !important;
+      box-shadow: 0 0 0 3px rgba(96,165,250,0.1) !important;
+      outline: none;
+    }
+    
+    /* تحسين التبديل بين العربية والإنجليزية */
+    .lang-toggle {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+    }
+    .lang-toggle button {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      transition: all 0.2s;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .lang-toggle button.active {
+      background: #60a5fa;
+      color: white;
+    }
+
+    /* Action buttons styling */
+    .action-btn {
+      padding: 8px 16px;
+      margin: 2px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .action-btn:hover {
+      transform: translateY(-1px);
+    }
+    .btn-edit { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .btn-edit:hover { background: rgba(59, 130, 246, 0.3); }
+    .btn-preview { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .btn-preview:hover { background: rgba(16, 185, 129, 0.3); }
+    .btn-toggle { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .btn-toggle:hover { background: rgba(245, 158, 11, 0.3); }
+    .btn-delete { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .btn-delete:hover { background: rgba(239, 68, 68, 0.3); }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .status-active { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .status-inactive { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+    /* Link dialog */
+    .link-dialog {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 20px;
+      z-index: 200;
+      min-width: 400px;
+      display: none;
+    }
+    
+    .link-dialog.show {
+      display: block;
+    }
+
+    /* Header and footer smaller sizes */
+    .form-header-small {
+      padding: 15px 30px !important;
+    }
+    
+    .form-footer-small {
+      padding: 15px 30px !important;
+    }
+
+    /* Developer modal enhanced */
+    .dev-modal {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    }
+    
+    .dev-modal-content {
+      text-align: center;
+      color: white;
+    }
+    
+    .dev-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      color: white;
+      border: 4px solid rgba(255,255,255,0.3);
+    }
+  </style>
+</head>
+<body>
+  <!-- Login modal -->
+  <div id="loginModal" class="modal show">
+    <div class="glass card p-8 w-[92vw] max-w-[450px]">
+      <h2 class="text-3xl font-bold mb-6 text-center">تسجيل الدخول</h2>
+      <form id="loginForm" class="space-y-4">
+        <input id="emailInput" type="email" placeholder="البريد الإلكتروني" required class="w-full p-4 rounded-lg text-lg">
+        <input id="passwordInput" type="password" placeholder="كلمة المرور" required class="w-full p-4 rounded-lg text-lg">
+        <button class="w-full py-4 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 font-bold text-lg">
+          <i class="fa-solid fa-sign-in-alt"></i> دخول
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div id="app" class="hidden min-h-screen p-6">
+    <header class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-4xl font-extrabold mb-2">لوحة تحكم الرسائل المنبثقة</h1>
+          <p class="text-lg text-gray-300">إدارة احترافية شاملة للرسائل المنبثقة</p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="showDevInfo(event)" class="btn glass">
+            <i class="fa-solid fa-code"></i> المطور
+          </button>
+          <button onclick="fetchPopups()" class="btn glass">
+            <i class="fa-solid fa-sync"></i> تحديث
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Messages area -->
+    <div id="message-container" class="mb-6"></div>
+    
+    <!-- Add New Button -->
+    <div class="mb-8">
+      <button onclick="showAddForm()" class="btn bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-lg px-8 py-4 rounded-xl">
+        <i class="fa-solid fa-plus-circle text-xl"></i>
+        إضافة رسالة جديدة
+      </button>
+    </div>
+
+    <!-- Current Messages Table -->
+    <div class="glass card p-6">
+      <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+        <i class="fa-solid fa-list text-blue-400"></i>
+        الرسائل الحالية
+      </h2>
+      <div class="overflow-x-auto">
+        <table id="popupsTable" class="min-w-full">
+          <thead>
+            <tr class="border-b-2 border-white/20">
+              <th class="text-right font-bold text-lg">العنوان العربي</th>
+              <th class="text-left font-bold text-lg">English Title</th>
+              <th class="text-center font-bold text-lg">الحالة</th>
+              <th class="text-center font-bold text-lg">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody class="bg-transparent">
+            <tr>
+              <td colspan="4" class="text-center text-gray-400 py-8 text-lg">
+                <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>
+                جاري تحميل الرسائل...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Screen Add/Edit Modal -->
+  <div id="formModal" class="modal-fullscreen">
+    <div class="modal-content">
+      <header class="glass form-header-small mb-4 sticky top-0 z-10">
+        <div class="flex items-center justify-between">
+          <h2 id="formModalTitle" class="text-xl font-bold flex items-center gap-3">
+            <i class="fa-solid fa-edit text-blue-400"></i>
+            إضافة رسالة جديدة
+          </h2>
+          <button onclick="closeFormModal()" class="btn glass text-lg px-3 py-2">
+            <i class="fa-solid fa-times"></i> إغلاق
+          </button>
+        </div>
+      </header>
+
+      <div class="p-6 max-w-6xl mx-auto">
+        <form id="popupForm" class="space-y-8">
+          <input type="hidden" id="popup_id" value="0">
+          
+          <!-- Settings Section -->
+          <div class="glass card p-6">
+            <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-cog text-yellow-400"></i>
+              إعدادات عامة
+            </h3>
+            <div class="flex items-center justify-center">
+              <label class="flex items-center gap-4 text-lg font-semibold cursor-pointer">
+                <input id="is_active" type="checkbox" class="h-6 w-6 rounded">
+                <span>تفعيل الرسالة فور الحفظ</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Content Section -->
+          <div class="glass card p-6">
+            <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-edit text-green-400"></i>
+              محتوى الرسالة
+            </h3>
+            
+            <!-- Language Toggle -->
+            <div class="lang-toggle mb-6">
+              <button type="button" id="arabicTab" class="active">
+                <i class="fa-solid fa-globe"></i> المحتوى العربي
+              </button>
+              <button type="button" id="englishTab">
+                <i class="fa-solid fa-language"></i> English Content
+              </button>
+            </div>
+
+            <!-- Arabic Content -->
+            <div id="arabicContent" class="space-y-6">
+              <div>
+                <label class="block mb-3 font-semibold text-lg">العنوان بالعربية</label>
+                <input id="title_ar" class="w-full p-4 rounded-lg text-lg" placeholder="أدخل العنوان بالعربية">
+              </div>
+              
+              <div>
+                <label class="block mb-3 font-semibold text-lg">محتوى الرسالة بالعربية</label>
+                
+                <!-- Arabic Rich Text Editor -->
+                <div class="rich-editor" data-lang="ar">
+                  <!-- Toolbar -->
+                  <div class="rich-editor-toolbar">
+                    <!-- Font Size -->
+                    <select class="editor-select" onchange="changeFontSize(this.value, 'ar')" title="حجم الخط">
+                      <option value="">حجم الخط</option>
+                      <option value="9">9</option>
+                      <option value="10">10</option>
+                      <option value="11">11</option>
+                      <option value="12">12</option>
+                      <option value="13">13</option>
+                      <option value="14">14</option>
+                      <option value="15">15</option>
+                      <option value="16">16</option>
+                    </select>
+                    
+                    <!-- Bold -->
+                    <button type="button" class="editor-btn" onclick="execCommand('bold', 'ar')" title="عريض">
+                      <i class="fa-solid fa-bold"></i>
+                    </button>
+                    
+                    <!-- Italic -->
+                    <button type="button" class="editor-btn" onclick="execCommand('italic', 'ar')" title="مائل">
+                      <i class="fa-solid fa-italic"></i>
+                    </button>
+                    
+                    <!-- Underline -->
+                    <button type="button" class="editor-btn" onclick="execCommand('underline', 'ar')" title="تحته خط">
+                      <i class="fa-solid fa-underline"></i>
+                    </button>
+                    
+                    <!-- Text Align -->
+                    <button type="button" class="editor-btn" onclick="execCommand('justifyRight', 'ar')" title="محاذاة يمين">
+                      <i class="fa-solid fa-align-right"></i>
+                    </button>
+                    <button type="button" class="editor-btn" onclick="execCommand('justifyCenter', 'ar')" title="محاذاة وسط">
+                      <i class="fa-solid fa-align-center"></i>
+                    </button>
+                    <button type="button" class="editor-btn" onclick="execCommand('justifyLeft', 'ar')" title="محاذاة شمال">
+                      <i class="fa-solid fa-align-left"></i>
+                    </button>
+                    
+                    <!-- Text Color -->
+                    <input type="color" class="editor-input" onchange="changeTextColor(this.value, 'ar')" title="لون النص" style="width: 50px; height: 35px;">
+                    
+                    <!-- Link -->
+                    <button type="button" class="editor-btn" onclick="insertLink('ar')" title="إدراج رابط">
+                      <i class="fa-solid fa-link"></i>
+                    </button>
+                    
+                    <!-- Icons -->
+                    <div class="icon-picker-dropdown">
+                      <button type="button" class="editor-btn" onclick="toggleIconPicker('ar')" title="إدراج أيقونة">
+                        <i class="fa-solid fa-icons"></i>
+                      </button>
+                      <div id="iconDropdownAr" class="icon-dropdown-content">
+                        <div class="icon-grid-inline" id="iconGridAr"></div>
+                      </div>
+                    </div>
+                    
+                    <!-- Lists -->
+                    <button type="button" class="editor-btn" onclick="execCommand('insertOrderedList', 'ar')" title="قائمة مرقمة">
+                      <i class="fa-solid fa-list-ol"></i>
+                    </button>
+                    <button type="button" class="editor-btn" onclick="execCommand('insertUnorderedList', 'ar')" title="قائمة نقطية">
+                      <i class="fa-solid fa-list-ul"></i>
+                    </button>
+                  </div>
+                  
+                  <!-- Content Area -->
+                  <div id="editor_ar" class="rich-editor-content" contenteditable="true" dir="rtl" 
+                       placeholder="اكتب محتوى الرسالة بالعربي هنا..." 
+                       onkeyup="autosaveDraft()" onblur="autosaveDraft()"></div>
+                </div>
+              </div>
+              
+              <div>
+                <label class="block mb-3 font-semibold text-lg">نص الزر بالعربية</label>
+                <input id="button_text_ar" class="w-full p-4 rounded-lg text-lg" placeholder="مثال: اضغط هنا">
+              </div>
+            </div>
+
+            <!-- English Content -->
+            <div id="englishContent" class="space-y-6 hidden" dir="ltr">
+              <div>
+                <label class="block mb-3 font-semibold text-lg text-right">English Title</label>
+                <input id="title_en" class="w-full p-4 rounded-lg text-lg text-left" placeholder="Enter title in English">
+              </div>
+              
+              <div>
+                <label class="block mb-3 font-semibold text-lg text-right">English Message Content</label>
+                
+                <!-- English Rich Text Editor -->
+                <div class="rich-editor" data-lang="en">
+                  <!-- Toolbar -->
+                  <div class="rich-editor-toolbar">
+                    <!-- Font Size -->
+                    <select class="editor-select" onchange="changeFontSize(this.value, 'en')" title="Font Size">
+                      <option value="">Font Size</option>
+                      <option value="9">9</option>
+                      <option value="10">10</option>
+                      <option value="11">11</option>
+                      <option value="12">12</option>
+                      <option value="13">13</option>
+                      <option value="14">14</option>
+                      <option value="15">15</option>
+                      <option value="16">16</option>
+                    </select>
+                    
+                    <!-- Bold -->
+                    <button type="button" class="editor-btn" onclick="execCommand('bold', 'en')" title="Bold">
+                      <i class="fa-solid fa-bold"></i>
+                    </button>
+                    
+                    <!-- Italic -->
+                    <button type="button" class="editor-btn" onclick="execCommand('italic', 'en')" title="Italic">
+                      <i class="fa-solid fa-italic"></i>
+                    </button>
+                    
+                    <!-- Underline -->
+                    <button type="button" class="editor-btn" onclick="execCommand('underline', 'en')" title="Underline">
+                      <i class="fa-solid fa-underline"></i>
+                    </button>
+                    
+                    <!-- Text Align -->
+                    <button type="button" class="editor-btn" onclick="execCommand('justifyLeft', 'en')" title="Align Left">
+                      <i class="fa-solid fa-align-left"></i>
+                    </button>
+                    <button type="button" class="editor-btn" onclick="execCommand('justifyCenter', 'en')" title="Align Center">
+                      <i class="fa-solid fa-align-center"></i>
+                    </button>
+                    <button type="button" class="editor-btn" onclick="execCommand('justifyRight', 'en')" title="Align Right">
+                      <i class="fa-solid fa-align-right"></i>
+                    </button>
+                    
+                    <!-- Text Color -->
+                    <input type="color" class="editor-input" onchange="changeTextColor(this.value, 'en')" title="Text Color" style="width: 50px; height: 35px;">
+                    
+                    <!-- Link -->
+                    <button type="button" class="editor-btn" onclick="insertLink('en')" title="Insert Link">
+                      <i class="fa-solid fa-link"></i>
+                    </button>
+                    
+                    <!-- Icons -->
+                    <div class="icon-picker-dropdown">
+                      <button type="button" class="editor-btn" onclick="toggleIconPicker('en')" title="Insert Icon">
+                        <i class="fa-solid fa-icons"></i>
+                      </button>
+                      <div id="iconDropdownEn" class="icon-dropdown-content">
+                        <div class="icon-grid-inline" id="iconGridEn"></div>
+                      </div>
+                    </div>
+                    
+                    <!-- Lists -->
+                    <button type="button" class="editor-btn" onclick="execCommand('insertOrderedList', 'en')" title="Ordered List">
+                      <i class="fa-solid fa-list-ol"></i>
+                    </button>
+                    <button type="button" class="editor-btn" onclick="execCommand('insertUnorderedList', 'en')" title="Unordered List">
+                      <i class="fa-solid fa-list-ul"></i>
+                    </button>
+                  </div>
+                  
+                  <!-- Content Area -->
+                  <div id="editor_en" class="rich-editor-content" contenteditable="true" dir="ltr" 
+                       placeholder="Write your message content in English here..." 
+                       onkeyup="autosaveDraft()" onblur="autosaveDraft()"></div>
+                </div>
+              </div>
+              
+              <div>
+                <label class="block mb-3 font-semibold text-lg text-right">English Button Text</label>
+                <input id="button_text_en" class="w-full p-4 rounded-lg text-lg text-left" placeholder="Example: Click Here">
+              </div>
+            </div>
+          </div>
+
+          <!-- Button Settings -->
+          <div class="glass card p-6">
+            <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-mouse-pointer text-purple-400"></i>
+              إعدادات الزر
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label class="block mb-3 font-semibold text-lg">رابط الزر</label>
+                <input id="button_link" placeholder="https://example.com" class="w-full p-4 rounded-lg text-lg">
+              </div>
+              <div>
+                <label class="block mb-3 font-semibold text-lg">أيقونة الزر</label>
+                <input id="button_icon" placeholder="fas fa-hand-pointer" class="w-full p-4 rounded-lg text-lg">
+              </div>
+              <div>
+                <label class="block mb-3 font-semibold text-lg">لون الزر</label>
+                <input id="button_color" type="color" value="#0099e6" class="w-full p-4 rounded-lg h-16">
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="sticky bottom-0 glass card form-footer-small mt-8">
+            <div class="flex gap-4 justify-center">
+              <button type="submit" class="btn bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-lg px-8 py-4">
+                <i class="fa-solid fa-save text-xl"></i> حفظ الرسالة
+              </button>
+              <button type="button" id="previewFormBtn" class="btn bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-lg px-8 py-4">
+                <i class="fa-regular fa-eye text-xl"></i> معاينة الرسالة
+              </button>
+              <button type="button" onclick="resetForm()" class="btn glass text-lg px-8 py-4">
+                <i class="fa-solid fa-rotate-left text-xl"></i> إعادة تعيين
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Link Dialog -->
+  <div id="linkDialog" class="link-dialog">
+    <h3 class="text-lg font-bold mb-4">إدراج رابط</h3>
+    <div class="space-y-3">
+      <input type="text" id="linkText" placeholder="نص الرابط" class="w-full p-3 rounded-lg">
+      <input type="url" id="linkUrl" placeholder="https://example.com" class="w-full p-3 rounded-lg">
+      <div class="flex gap-3">
+        <button onclick="insertLinkConfirm()" class="btn bg-blue-600 text-white px-4 py-2">إدراج</button>
+        <button onclick="closeLinkDialog()" class="btn glass px-4 py-2">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview modal with exact template design -->
+  <div id="previewModal" class="modal preview-modal">
+    <div class="popup-overlay-preview" onclick="closePreview()"></div>
+    <div id="previewContainer" class="popup-container-preview">
+      <img src="https://eftprodongle.com/wp-content/uploads/2025/08/LogoUnlocker.png" class="popup-background-image" alt="background">
+      <div class="popup-header-preview">
+        <span id="preview-header-text"></span>
+        <button id="preview-lang-toggle" class="lang-toggle-inside hidden">EN</button>
+        <a href="#" class="close-btn-preview" onclick="closePreview()">&times;</a>
+      </div>
+      <div class="popup-content-preview" id="preview-content"></div>
+      <div class="popup-footer-preview">
+        <hr>
+        <p id="preview-footer-help-text"></p>
+        <div class="contact-buttons-wrapper" id="preview-contact-buttons"></div>
+        <p id="preview-footer-thanks-text" class="footer-thanks"></p>
+      </div>
+      <div class="dont-show-again-preview">
+        <input type="checkbox" id="preview-dontShowAgain">
+        <label for="preview-dontShowAgain" id="preview-dont-show-label"></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Developer modal -->
+  <div id="devInfoModal" class="modal">
+    <div class="dev-modal p-8 card w-[92vw] max-w-[500px]">
+      <div class="dev-modal-content">
+        <div class="dev-avatar">
+          <i class="fa-solid fa-code"></i>
+        </div>
+        <h3 class="text-3xl font-bold mb-2">المطور</h3>
+        <div class="bg-white/10 rounded-lg p-6 mb-6">
+          <p class="text-2xl font-bold mb-3">المهندس عادل حمزة النهر</p>
+          <div class="flex items-center justify-center gap-4 text-lg">
+            <div class="flex items-center gap-2">
+              <i class="fab fa-whatsapp text-green-400"></i>
+              <span>01158594028</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i class="fab fa-whatsapp text-green-400"></i>
+              <span>01067908253</span>
+            </div>
+          </div>
+        </div>
+        <button onclick="closeDevInfoModal()" class="btn bg-white/20 text-white px-6 py-3 rounded-lg hover:bg-white/30">
+          <i class="fa-solid fa-times"></i> إغلاق
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="fixed bottom-6 left-6 text-sm text-gray-300">
+    تم برمجته بواسطة 
+    <a href="#" onclick="showDevInfo(event)" class="text-blue-400 hover:underline font-semibold">
+      المهندس عادل حمزة النهر
+    </a>
+  </footer>
+
+  <script>
+    // API URL
+    const API_URL = 'admin_api.php';
+    
+    // DOM Elements
+    const loginModal = document.getElementById('loginModal');
+    const loginForm = document.getElementById('loginForm');
+    const appEl = document.getElementById('app');
+    const messageContainer = document.getElementById('message-container');
+    const popupsTableBody = document.querySelector('#popupsTable tbody');
+    
+    // Form Modal
+    const formModal = document.getElementById('formModal');
+    const formModalTitle = document.getElementById('formModalTitle');
+    
+    // Form elements
+    const popup_id = document.getElementById('popup_id');
+    const is_active = document.getElementById('is_active');
+    const title_ar = document.getElementById('title_ar');
+    const title_en = document.getElementById('title_en');
+    const button_text_ar = document.getElementById('button_text_ar');
+    const button_text_en = document.getElementById('button_text_en');
+    const button_link = document.getElementById('button_link');
+    const button_icon = document.getElementById('button_icon');
+    const button_color = document.getElementById('button_color');
+    const previewFormBtn = document.getElementById('previewFormBtn');
+    
+    // Language tabs
+    const arabicTab = document.getElementById('arabicTab');
+    const englishTab = document.getElementById('englishTab');
+    const arabicContent = document.getElementById('arabicContent');
+    const englishContent = document.getElementById('englishContent');
+    
+    // Rich Text Editors
+    const editorAr = document.getElementById('editor_ar');
+    const editorEn = document.getElementById('editor_en');
+    
+    // Modals
+    const previewModal = document.getElementById('previewModal');
+    const previewContainer = document.getElementById('previewContainer');
+    const devInfoModal = document.getElementById('devInfoModal');
+    const linkDialog = document.getElementById('linkDialog');
+    
+    let popupsCache = [];
+    let editingId = 0;
+    let currentLang = 'ar';
+    let currentEditor = null;
+    
+    // Font Awesome icons list
+    const faIcons = [
+      'fas fa-check-circle','fas fa-times-circle','fas fa-info-circle','fas fa-exclamation-triangle',
+      'fas fa-gift','fas fa-fire','fas fa-star','fas fa-heart','fas fa-bell','fas fa-cog',
+      'fas fa-user','fas fa-rocket','fas fa-wallet','fas fa-lock','fas fa-unlock','fas fa-download',
+      'fas fa-paper-plane','fab fa-whatsapp','fab fa-telegram','fas fa-envelope','fas fa-mobile-alt',
+      'fas fa-wifi','fas fa-server','fas fa-code','fas fa-file-code','fas fa-credit-card','fas fa-dollar-sign',
+      'fas fa-tag','fas fa-tags','fas fa-percent','fas fa-cart-shopping','fas fa-wrench','fas fa-shield-halved',
+      'fas fa-bolt','fas fa-calendar-days','fas fa-clock','fas fa-map-marker-alt','fas fa-trophy',
+      'fas fa-thumbs-up','fas fa-thumbs-down','fas fa-smile','fas fa-frown','fas fa-meh',
+      'fas fa-lightbulb','fas fa-magic','fas fa-crown','fas fa-diamond','fas fa-gem'
+    ];
+
+    // --- Rich Text Editor Functions ---
+    function execCommand(command, lang) {
+      const editor = lang === 'ar' ? editorAr : editorEn;
+      editor.focus();
+      
+      try {
+        document.execCommand(command, false, null);
+      } catch (e) {
+        console.error('execCommand failed:', e);
+      }
+      
+      autosaveDraft();
+    }
+    
+    function changeFontSize(size, lang) {
+      if (!size) return;
+      
+      const editor = lang === 'ar' ? editorAr : editorEn;
+      editor.focus();
+      
+      const selection = window.getSelection();
+      if (selection.rangeCount === 0) return;
+      
+      const range = selection.getRangeAt(0);
+      if (range.collapsed) {
+        // If no selection, apply to new text
+        const span = document.createElement('span');
+        span.style.fontSize = size + 'px';
+        span.innerHTML = '&#8203;'; // Zero-width space
+        range.insertNode(span);
+        
+        // Move cursor inside span
+        const newRange = document.createRange();
+        newRange.setStart(span, 0);
+        newRange.setEnd(span, 1);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+      } else {
+        // Apply to selected text
+        try {
+          document.execCommand('fontSize', false, '7');
+          // Find the font elements and change their size
+          const fontElements = editor.querySelectorAll('font[size="7"]');
+          fontElements.forEach(fontEl => {
+            const span = document.createElement('span');
+            span.style.fontSize = size + 'px';
+            span.innerHTML = fontEl.innerHTML;
+            fontEl.parentNode.replaceChild(span, fontEl);
+          });
+        } catch (e) {
+          console.error('fontSize failed:', e);
+        }
+      }
+      
+      autosaveDraft();
+    }
+    
+    function changeTextColor(color, lang) {
+      const editor = lang === 'ar' ? editorAr : editorEn;
+      editor.focus();
+      
+      try {
+        document.execCommand('foreColor', false, color);
+      } catch (e) {
+        console.error('foreColor failed:', e);
+      }
+      
+      autosaveDraft();
+    }
+    
+    function insertLink(lang) {
+      currentLang = lang;
+      const selection = window.getSelection();
+      const selectedText = selection.toString();
+      
+      document.getElementById('linkText').value = selectedText;
+      document.getElementById('linkUrl').value = '';
+      linkDialog.classList.add('show');
+      document.getElementById('linkText').focus();
+    }
+    
+    function insertLinkConfirm() {
+      const text = document.getElementById('linkText').value;
+      const url = document.getElementById('linkUrl').value;
+      
+      if (!text || !url) {
+        alert('يرجى إدخال نص الرابط والرابط');
+        return;
+      }
+      
+      const editor = currentLang === 'ar' ? editorAr : editorEn;
+      editor.focus();
+      
+      const link = `<a href="${url}" target="_blank" style="color: #60a5fa; text-decoration: underline;">${text}</a>`;
+      
+      try {
+        document.execCommand('insertHTML', false, link);
+      } catch (e) {
+        console.error('insertHTML failed:', e);
+      }
+      
+      closeLinkDialog();
+      autosaveDraft();
+    }
+    
+    function closeLinkDialog() {
+      linkDialog.classList.remove('show');
+    }
+    
+    // Initialize icon grids
+    function initIconGrids() {
+      const iconGridAr = document.getElementById('iconGridAr');
+      const iconGridEn = document.getElementById('iconGridEn');
+      
+      faIcons.forEach(iconClass => {
+        // Arabic grid
+        const iAr = document.createElement('i');
+        iAr.className = iconClass;
+        iAr.title = iconClass;
+        iAr.onclick = () => insertIcon(iconClass, 'ar');
+        iconGridAr.appendChild(iAr);
+        
+        // English grid
+        const iEn = document.createElement('i');
+        iEn.className = iconClass;
+        iEn.title = iconClass;
+        iEn.onclick = () => insertIcon(iconClass, 'en');
+        iconGridEn.appendChild(iEn);
+      });
+    }
+    
+    function toggleIconPicker(lang) {
+      const dropdown = document.getElementById(`iconDropdown${lang === 'ar' ? 'Ar' : 'En'}`);
+      
+      // Close other dropdowns
+      document.querySelectorAll('.icon-dropdown-content').forEach(d => {
+        if (d !== dropdown) d.classList.remove('show');
+      });
+      
+      dropdown.classList.toggle('show');
+      currentEditor = lang === 'ar' ? editorAr : editorEn;
+    }
+    
+    function insertIcon(iconClass, lang) {
+      const editor = lang === 'ar' ? editorAr : editorEn;
+      editor.focus();
+      
+      // Get current selection/cursor position
+      const selection = window.getSelection();
+      const range = selection.getRangeAt(0);
+      
+      // Create icon element
+      const iconSpan = document.createElement('span');
+      iconSpan.innerHTML = `<i class="${iconClass}" style="margin: 0 4px; color: #60a5fa; cursor: pointer;" onclick="selectIcon(this)"></i>`;
+      
+      // Insert at cursor position
+      range.deleteContents();
+      range.insertNode(iconSpan);
+      
+      // Move cursor after icon
+      range.setStartAfter(iconSpan);
+      range.setEndAfter(iconSpan);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      
+      // Close dropdown
+      document.getElementById(`iconDropdown${lang === 'ar' ? 'Ar' : 'En'}`).classList.remove('show');
+      autosaveDraft();
+    }
+    
+    // Function to select and highlight icons
+    window.selectIcon = function(iconElement) {
+      // Remove selection from other icons
+      document.querySelectorAll('.rich-editor-content i').forEach(i => {
+        i.style.backgroundColor = 'transparent';
+        i.style.padding = '0';
+      });
+      
+      // Highlight selected icon
+      iconElement.style.backgroundColor = 'rgba(96,165,250,0.3)';
+      iconElement.style.padding = '2px 4px';
+      iconElement.style.borderRadius = '4px';
+      
+      currentEditor = iconElement.closest('.rich-editor-content');
+    }
+
+    // --- Utility Functions ---
+    function toast(msg, type = 'success') {
+      const existing = document.querySelector('.toast');
+      if (existing) existing.remove();
+      
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.innerHTML = `<div class="flex items-center gap-3"><i class="fa-solid fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} text-lg"></i><span>${msg}</span></div>`;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 5000);
+    }
+
+    function showMessageInline(msg, type = 'success') {
+      const bgClass = type === 'success' 
+        ? 'bg-emerald-600/20 text-emerald-300 border-emerald-500/50' 
+        : 'bg-rose-600/20 text-rose-300 border-rose-500/50';
+      messageContainer.innerHTML = `
+        <div class="p-6 rounded-lg border-2 ${bgClass} mb-6 text-lg font-semibold">
+          <i class="fa-solid fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} mr-3"></i>
+          ${msg}
+        </div>`;
+      setTimeout(() => messageContainer.innerHTML = '', 5000);
+      toast(msg, type);
+    }
+
+    function escapeHtml(s = '') { 
+      return String(s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c])); 
+    }
+
+    // --- Modal Management ---
+    function showAddForm() {
+      resetForm();
+      editingId = 0;
+      formModalTitle.innerHTML = '<i class="fa-solid fa-plus text-green-400"></i> إضافة رسالة جديدة';
+      formModal.classList.add('show');
+    }
+
+    function showEditForm(id) {
+      const popup = popupsCache.find(x => +x.id === +id);
+      if (!popup) return showMessageInline('البيانات غير متوفرة', 'error');
+      
+      editingId = id;
+      formModalTitle.innerHTML = '<i class="fa-solid fa-edit text-blue-400"></i> تعديل الرسالة';
+      formModal.classList.add('show');
+      
+      // Populate form
+      setTimeout(() => {
+        popup_id.value = popup.id;
+        is_active.checked = +popup.is_active === 1;
+        title_ar.value = popup.title_ar || '';
+        title_en.value = popup.title_en || '';
+        button_text_ar.value = popup.button_text_ar || '';
+        button_text_en.value = popup.button_text_en || '';
+        button_link.value = popup.button_link || '';
+        button_icon.value = popup.button_icon || '';
+        button_color.value = popup.button_color || '#0099e6';
+        
+        editorAr.innerHTML = popup.content_ar || '';
+        editorEn.innerHTML = popup.content_en || '';
+        
+        showMessageInline('تم تحميل الرسالة للتعديل', 'success');
+      }, 100);
+    }
+
+    function closeFormModal() {
+      formModal.classList.remove('show');
+      resetForm();
+    }
+
+    // --- Language Tab Switching ---
+    arabicTab.addEventListener('click', () => {
+      arabicTab.classList.add('active');
+      englishTab.classList.remove('active');
+      arabicContent.classList.remove('hidden');
+      englishContent.classList.add('hidden');
+    });
+
+    englishTab.addEventListener('click', () => {
+      englishTab.classList.add('active');
+      arabicTab.classList.remove('active');
+      englishContent.classList.remove('hidden');
+      arabicContent.classList.add('hidden');
+    });
+
+    // --- Preview Functions with exact template ---
+    const staticTexts = {
+      ar: {
+        footerHelp: 'هل تحتاج للمساعدة؟ تواصل معنا:',
+        footerThanks: '<span class="brand-name-orange">Easy-Unlocker.CoM</span> شكراً لثقتك بـ ',
+        dontShowLabel: 'لا تعرض هذه الرسالة مرة أخرى',
+        links: { telegram: 'تيليجرام', whatsapp: 'واتساب', email: 'بريد إلكتروني' },
+        toggle: 'EN'
+      },
+      en: {
+        footerHelp: 'Need help? Reach out to us:',
+        footerThanks: 'Thank you for trusting <span class="brand-name-orange">Easy-Unlocker.CoM</span>.',
+        dontShowLabel: "Don't show this message again",
+        links: { telegram: 'Telegram', whatsapp: 'WhatsApp', email: 'Email' },
+        toggle: 'AR'
+      }
+    };
+
+    function showPreviewFromForm() {
+      const popup = {
+        title_ar: title_ar.value || 'العنوان',
+        content_ar: editorAr.innerHTML || '<p>المحتوى</p>',
+        button_text_ar: button_text_ar.value,
+        title_en: title_en.value || 'Title',
+        content_en: editorEn.innerHTML || '<p>Content</p>',
+        button_text_en: button_text_en.value,
+        button_link: button_link.value,
+        button_icon: button_icon.value,
+        button_color: button_color.value
+      };
+      
+      loadPopupPreview(popup);
+      previewModal.classList.add('show');
+    }
+
+    function showPreviewFromPopupData(popup) {
+      loadPopupPreview(popup);
+      previewModal.classList.add('show');
+    }
+
+    function loadPopupPreview(popup) {
+      const hasEnglish = popup.title_en;
+      
+      previewContainer.classList.remove('welcome', 'offer');
+      previewContainer.classList.add('welcome'); // Default since we removed type selection
+      
+      document.getElementById('preview-header-text').textContent = popup.title_ar;
+      document.getElementById('preview-content').innerHTML = popup.content_ar;
+      document.getElementById('preview-dont-show-label').textContent = staticTexts.ar.dontShowLabel;
+      document.getElementById('preview-footer-help-text').textContent = staticTexts.ar.footerHelp;
+      document.getElementById('preview-footer-thanks-text').innerHTML = staticTexts.ar.footerThanks;
+      
+      const langToggleBtn = document.getElementById('preview-lang-toggle');
+      langToggleBtn.style.display = hasEnglish ? 'block' : 'none';
+      
+      const buttonText = popup.button_text_ar;
+      const buttonLink = popup.button_link;
+      const buttonIcon = popup.button_icon || 'fas fa-hand-pointer';
+      const buttonColor = popup.button_color || '#0099e6';
+      
+      if (buttonText && buttonLink) {
+        let ctaButton = document.querySelector('#preview-content .cta-button');
+        if (!ctaButton) {
+          const ctaContainer = document.createElement('div');
+          ctaContainer.className = 'cta-button-container';
+          ctaContainer.innerHTML = `<a href="#" class="cta-button"><i class="cta-icon"></i><span></span></a>`;
+          document.getElementById('preview-content').appendChild(ctaContainer);
+          ctaButton = ctaContainer.querySelector('.cta-button');
+        }
+        ctaButton.href = buttonLink;
+        ctaButton.querySelector('span').textContent = buttonText;
+        ctaButton.querySelector('.cta-icon').className = `cta-icon ${buttonIcon}`;
+        ctaButton.style.backgroundColor = buttonColor;
+        ctaButton.style.display = 'inline-flex';
+      } else {
+        const ctaContainer = document.querySelector('#preview-content .cta-button-container');
+        if (ctaContainer) ctaContainer.remove();
+      }
+      
+      const contactButtonsHTML = `
+        <a href="https://t.me/easyunlockersupport" target="_blank" rel="noopener" class="contact-btn telegram-btn"><i class="fas fa-paper-plane"></i> <span>${staticTexts.ar.links.telegram}</span></a>
+        <a href="https://wa.me/+9647511889867" target="_blank" rel="noopener" class="contact-btn whatsapp-btn"><i class="fab fa-whatsapp"></i> <span>${staticTexts.ar.links.whatsapp}</span></a>
+        <a href="mailto:Easyunlocker.team1@gmail.com" target="_blank" rel="noopener" class="contact-btn email-btn"><i class="fas fa-envelope"></i> <span>${staticTexts.ar.links.email}</span></a>`;
+      document.getElementById('preview-contact-buttons').innerHTML = contactButtonsHTML;
+    }
+
+    function closePreview() { 
+      previewModal.classList.remove('show'); 
+    }
+
+    // --- Data Management ---
+    async function fetchPopups() {
+      try {
+        const res = await fetch(`${API_URL}?action=fetch`);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const list = await res.json();
+        popupsCache = Array.isArray(list) ? list : [];
+        renderTable(popupsCache);
+      } catch (err) {
+        console.error(err);
+        showMessageInline('فشل في تحميل الرسائل', 'error');
+        popupsTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-400 py-8 text-lg">فشل في التحميل</td></tr>`;
+      }
+    }
+
+    function renderTable(data) {
+      if (!data || !data.length) {
+        popupsTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-400 py-8 text-lg">لا توجد رسائل حالياً.</td></tr>`;
+        return;
+      }
+      
+      popupsTableBody.innerHTML = '';
+      data.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.dataset.id = p.id;
+        tr.className = 'hover:bg-white/5 transition-colors border-b border-white/5';
+        tr.innerHTML = `
+          <td class="text-right align-top text-lg">${escapeHtml(p.title_ar || '-')}</td>
+          <td class="text-left align-top text-lg">${escapeHtml(p.title_en || '-')}</td>
+          <td class="text-center align-top">
+            <span class="status-badge ${+p.is_active === 1 ? 'status-active' : 'status-inactive'}">
+              ${+p.is_active === 1 ? 'فعّالة' : 'معطلة'}
+            </span>
+          </td>
+          <td class="text-center align-top">
+            <div class="flex gap-2 flex-wrap justify-center">
+              <button class="action-btn btn-edit" onclick="showEditForm(${p.id})" title="تعديل">
+                <i class="fa-solid fa-pen"></i> تعديل
+              </button>
+              <button class="action-btn btn-preview" onclick="previewRow(${p.id})" title="معاينة">
+                <i class="fa-regular fa-eye"></i> معاينة
+              </button>
+              <button class="action-btn btn-toggle" onclick="togglePopup(${p.id}, ${+p.is_active})" title="${+p.is_active === 1 ? 'تعطيل' : 'تفعيل'}">
+                <i class="fa-solid fa-${+p.is_active === 1 ? 'pause' : 'play'}"></i> ${+p.is_active === 1 ? 'تعطيل' : 'تفعيل'}
+              </button>
+              <button class="action-btn btn-delete" onclick="deletePopup(${p.id})" title="حذف">
+                <i class="fa-solid fa-trash"></i> حذف
+              </button>
+            </div>
+          </td>
+        `;
+        popupsTableBody.appendChild(tr);
+      });
+    }
+
+    function previewRow(id) {
+      const popup = popupsCache.find(x => +x.id === +id);
+      if (!popup) return showMessageInline('الرسالة غير متوفرة', 'error');
+      showPreviewFromPopupData(popup);
+    }
+
+    // --- Form Handling ---
+    document.getElementById('popupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const payload = {
+        action: 'save',
+        id: popup_id.value || 0,
+        is_active: is_active.checked ? 1 : 0,
+        title_ar: title_ar.value,
+        content_ar: editorAr.innerHTML,
+        button_text_ar: button_text_ar.value,
+        title_en: title_en.value,
+        content_en: editorEn.innerHTML,
+        button_text_en: button_text_en.value,
+        button_link: button_link.value,
+        button_icon: button_icon.value,
+        button_color: button_color.value
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        
+        if (result.success) {
+          showMessageInline(result.message || 'تم الحفظ بنجاح', 'success');
+          closeFormModal();
+          fetchPopups();
+        } else {
+          showMessageInline(result.message || 'فشل في الحفظ', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showMessageInline('فشل في الاتصال بالخادم', 'error');
+      }
+    });
+
+    // --- CRUD Operations ---
+    window.deletePopup = async function(id) {
+      if (!confirm('هل أنت متأكد من حذف هذه الرسالة نهائياً؟\n\nلا يمكن التراجع عن هذا الإجراء.')) return;
+      
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', id })
+        });
+        const result = await res.json();
+        
+        if (result.success) {
+          showMessageInline(result.message || 'تم الحذف بنجاح', 'success');
+          fetchPopups();
+        } else {
+          showMessageInline(result.message || 'فشل الحذف', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showMessageInline('فشل في الاتصال بالخادم', 'error');
+      }
+    }
+
+    window.togglePopup = async function(id, currentState) {
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            action: 'toggle', 
+            id, 
+            new_state: currentState ? 0 : 1 
+          })
+        });
+        const result = await res.json();
+        
+        if (result.success) {
+          showMessageInline(result.message || 'تم تحديث حالة الرسالة', 'success');
+          fetchPopups();
+        } else {
+          showMessageInline(result.message || 'فشل تحديث الحالة', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showMessageInline('فشل في الاتصال بالخادم', 'error');
+      }
+    }
+
+    // --- Form Reset and Draft Management ---
+    function resetForm() {
+      popup_id.value = 0;
+      is_active.checked = false;
+      title_ar.value = '';
+      title_en.value = '';
+      button_text_ar.value = '';
+      button_text_en.value = '';
+      button_link.value = '';
+      button_icon.value = '';
+      button_color.value = '#0099e6';
+      
+      editorAr.innerHTML = '';
+      editorEn.innerHTML = '';
+      
+      // Switch back to Arabic tab
+      arabicTab.click();
+      
+      localStorage.removeItem('popup_draft');
+    }
+
+    function autosaveDraft() {
+      try {
+        const draft = {
+          title_ar: title_ar.value,
+          content_ar: editorAr.innerHTML,
+          button_text_ar: button_text_ar.value,
+          title_en: title_en.value,
+          content_en: editorEn.innerHTML,
+          button_text_en: button_text_en.value,
+          button_link: button_link.value,
+          button_icon: button_icon.value,
+          button_color: button_color.value
+        };
+        localStorage.setItem('popup_draft', JSON.stringify(draft));
+      } catch (e) {
+        // Ignore localStorage errors
+      }
+    }
+
+    // --- Event Listeners ---
+    previewFormBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      showPreviewFromForm();
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.icon-picker-dropdown')) {
+        document.querySelectorAll('.icon-dropdown-content').forEach(d => {
+          d.classList.remove('show');
+        });
+      }
+    });
+
+    // --- Login System ---
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('emailInput').value;
+      const password = document.getElementById('passwordInput').value;
+      
+      if (email === 'admin@easy-unlocker.com' && password === 'admin') {
+        loginModal.classList.remove('show');
+        appEl.classList.remove('hidden');
+        toast('تم تسجيل الدخول بنجاح');
+        fetchPopups();
+      } else {
+        showMessageInline('بيانات تسجيل الدخول غير صحيحة', 'error');
+      }
+    });
+
+    // --- Developer Info ---
+    function showDevInfo(e) { 
+      e && e.preventDefault(); 
+      devInfoModal.classList.add('show'); 
+    }
+    function closeDevInfoModal() { 
+      devInfoModal.classList.remove('show'); 
+    }
+
+    // --- Modal Event Listeners ---
+    devInfoModal.addEventListener('click', (e) => { 
+      if (e.target === devInfoModal) closeDevInfoModal(); 
+    });
+    formModal.addEventListener('click', (e) => { 
+      if (e.target === formModal) closeFormModal(); 
+    });
+    linkDialog.addEventListener('click', (e) => { 
+      if (e.target === linkDialog) closeLinkDialog(); 
+    });
+
+    // --- Initialize Application ---
+    document.addEventListener('DOMContentLoaded', () => {
+      initIconGrids();
+    });
+  </script>
+</body>
+</html>
